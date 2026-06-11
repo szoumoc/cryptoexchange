@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+type Match struct {
+	Ask        *Order
+	Bid        *Order
+	SizeFilled float64
+	Price      float64
+}
 type Order struct {
 	Size      float64
 	Bid       bool
@@ -21,7 +27,7 @@ func NewOrder(size float64, bid bool) *Order {
 }
 
 func (o *Order) String() string {
-	return fmt.Sprintf("Order{Size: %f, Bid: %t, Timestamp: %d}", o.Size, o.Bid, o.Timestamp)
+	return fmt.Sprintf("Size: %f", o.Size)
 }
 
 type Limit struct {
@@ -38,8 +44,10 @@ func NewLimit(price float64) *Limit {
 }
 
 type OrderBook struct {
-	Bids *[]Limit
-	Asks *[]Limit
+	Bids       []*Limit
+	Asks       []*Limit
+	BidLimits  map[float64]*Limit
+	AsksLimits map[float64]*Limit
 }
 
 func (l *Limit) AddOrder(o *Order) {
@@ -50,7 +58,7 @@ func (l *Limit) AddOrder(o *Order) {
 }
 
 func (l *Limit) String() string {
-	return fmt.Sprintf("Limit{Price: %f, TotalVolume: %f, Orders: %v}", l.Price, l.TotalVolume, l.Orders)
+	return fmt.Sprintf("Price: %f, TotalVolume: %f", l.Price, l.TotalVolume)
 }
 
 func (l *Limit) DeleteOrder(o *Order) {
@@ -62,4 +70,44 @@ func (l *Limit) DeleteOrder(o *Order) {
 	}
 	l.TotalVolume -= o.Size
 	o.Limit = nil
+}
+
+func NewOrderBook() *OrderBook {
+	return &OrderBook{
+		Bids:       []*Limit{},
+		Asks:       []*Limit{},
+		BidLimits:  make(map[float64]*Limit),
+		AsksLimits: make(map[float64]*Limit),
+	}
+}
+
+func (ob *OrderBook) PlaceOrder(price float64, o *Order) []Match {
+	//1. try to match the order
+	// matching logic here
+
+	//2. if not matched, add to the order book
+	if o.Size > 0.0 {
+		ob.add(price, o)
+	}
+	return []Match{} // Placeholder return, replace with actual matches
+}
+
+func (ob *OrderBook) add(price float64, o *Order) {
+	var limit *Limit
+	if o.Bid {
+		limit = ob.BidLimits[price]
+	} else {
+		limit = ob.AsksLimits[price]
+	}
+	if limit == nil {
+		limit = NewLimit(price)
+		limit.AddOrder(o)
+		if o.Bid {
+			ob.Bids = append(ob.Bids, limit)
+			ob.BidLimits[price] = limit
+		} else {
+			ob.Asks = append(ob.Asks, limit)
+			ob.AsksLimits[price] = limit
+		}
+	}
 }
