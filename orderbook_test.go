@@ -43,5 +43,9 @@ func TestPlaceMarketOrder(t *testing.T) {
 	assert(t, len(matches), 1)
 	assert(t, len(ob.asks), 1)
 	assert(t, ob.AskTotalVolume(), 100.0)
+	assert(t, matches[0].Ask, sellOrderA)
+	assert(t, matches[0].Bid, buyOrder)
+	assert(t, matches[0].SizeFilled, 200.0)
+	assert(t, matches[0].Price, 20_000.0)
 	fmt.Printf("%+v", matches)
 }
