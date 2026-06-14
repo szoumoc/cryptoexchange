@@ -34,13 +34,14 @@ func TestOrderBook(t *testing.T) {
 }
 func TestPlaceMarketOrder(t *testing.T) {
 	ob := NewOrderBook()
-	sellOrderA := NewOrder(100, false)
+	sellOrderA := NewOrder(300, false)
 	ob.PlaceOrderLimit(20_000, sellOrderA)
 
 	buyOrder := NewOrder(200, true)
 	matches := ob.PlaceMarketOrder(buyOrder)
+	fmt.Printf("%+v", matches)
 	assert(t, len(matches), 1)
 	assert(t, len(ob.asks), 1)
-	assert(t, ob.AskTotalVolume(), 10)
+	assert(t, ob.AskTotalVolume(), 100.0)
 	fmt.Printf("%+v", matches)
 }

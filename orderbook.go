@@ -73,6 +73,8 @@ func (l *Limit) Fill(o *Order) []Match {
 	for _, order := range l.Orders {
 		match := l.filledOrder(order, o)
 		matches = append(matches, match)
+
+		l.TotalVolume -= match.SizeFilled
 		if o.isFilled() {
 			break
 		}
