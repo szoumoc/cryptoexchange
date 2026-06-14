@@ -69,15 +69,25 @@ func NewLimit(price float64) *Limit {
 }
 
 func (l *Limit) Fill(o *Order) []Match {
-	matches := []Match{}
+	var (
+		matches        []Match
+		ordersToDelete []*Order
+	)
+
 	for _, order := range l.Orders {
 		match := l.filledOrder(order, o)
 		matches = append(matches, match)
 
 		l.TotalVolume -= match.SizeFilled
+		if order.isFilled() {
+			ordersToDelete = append(ordersToDelete, order)
+		}
 		if o.isFilled() {
 			break
 		}
+	}
+	for _, order := range ordersToDelete {
+		l.DeleteOrder(order)
 	}
 	return matches
 }
@@ -162,10 +172,15 @@ func (ob *OrderBook) PlaceMarketOrder(o *Order) []Match {
 			limitMatches := limit.Fill(o)
 			matches = append(matches, limitMatches...)
 		}
+	} else {
+		if o.Size > ob.BidTotalVolume() {
+			panic("Not enough liquidity to fill the order")
+		}
+		for _, limit := range ob.Bids() {
+			limitMatches := limit.Fill(o)
+			matches = append(matches, limitMatches...)
+		}
 	}
-	// else{
-
-	// }
 	return matches
 }
 

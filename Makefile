@@ -5,7 +5,10 @@ run:
 test:
 	go test -v ./...
 
-git:
+test-git:
+	go test -v ./... && make gitorderbook
+
+gitorderbook:
 	git add .
 	git commit -m "update orderbook and tests"
 	git push
