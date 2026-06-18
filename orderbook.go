@@ -162,6 +162,14 @@ func NewOrderBook() *OrderBook {
 	}
 }
 
+func (ob *OrderBook) cancelOrder(o *Order) {
+	limit := o.Limit
+	limit.DeleteOrder(o)
+	if len(limit.Orders) == 0 {
+		ob.clearLimit(o.Bid, limit)
+	}
+}
+
 func (ob *OrderBook) PlaceMarketOrder(o *Order) []Match {
 	matches := []Match{}
 	if o.Bid {
@@ -171,6 +179,10 @@ func (ob *OrderBook) PlaceMarketOrder(o *Order) []Match {
 		for _, limit := range ob.Asks() {
 			limitMatches := limit.Fill(o)
 			matches = append(matches, limitMatches...)
+
+			if len(limit.Orders) == 0 {
+				ob.clearLimit(false, limit)
+			}
 		}
 	} else {
 		if o.Size > ob.BidTotalVolume() {
@@ -179,6 +191,9 @@ func (ob *OrderBook) PlaceMarketOrder(o *Order) []Match {
 		for _, limit := range ob.Bids() {
 			limitMatches := limit.Fill(o)
 			matches = append(matches, limitMatches...)
+			if len(limit.Orders) == 0 {
+				ob.clearLimit(true, limit)
+			}
 		}
 	}
 	return matches
@@ -193,13 +208,31 @@ func (ob *OrderBook) PlaceOrderLimit(price float64, o *Order) {
 	}
 	if limit == nil {
 		limit = NewLimit(price)
-		limit.AddOrder(o)
 		if o.Bid {
 			ob.bids = append(ob.bids, limit)
 			ob.BidLimits[price] = limit
 		} else {
 			ob.asks = append(ob.asks, limit)
 			ob.AsksLimits[price] = limit
+		}
+	}
+	limit.AddOrder(o)
+}
+
+func (ob *OrderBook) clearLimit(bid bool, limit *Limit) {
+	if bid {
+		delete(ob.BidLimits, limit.Price)
+		for i := 0; i < len(ob.bids); i++ {
+			if ob.bids[i] == limit {
+				ob.bids = append(ob.bids[:i], ob.bids[i+1:]...)
+			}
+		}
+	} else {
+		delete(ob.AsksLimits, limit.Price)
+		for i := 0; i < len(ob.asks); i++ {
+			if ob.asks[i] == limit {
+				ob.asks = append(ob.asks[:i], ob.asks[i+1:]...)
+			}
 		}
 	}
 }
