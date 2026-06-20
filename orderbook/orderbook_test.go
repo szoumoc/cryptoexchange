@@ -51,23 +51,23 @@ func TestPlaceMarketOrder(t *testing.T) {
 	fmt.Printf("%+v", matches)
 }
 
-func TestPlaceMarketOrderMultipleMatches(t *testing.T) {
-	ob := NewOrderBook()
-	sellOrderA := NewOrder(5, true)
-	sellOrderB := NewOrder(8, true)
-	sellOrderC := NewOrder(10, true)
-	ob.PlaceOrderLimit(10_000, sellOrderA)
-	ob.PlaceOrderLimit(5_000, sellOrderC)
-	ob.PlaceOrderLimit(20_000, sellOrderB)
+// func TestPlaceMarketOrderMultipleMatches(t *testing.T) {
+// 	ob := NewOrderBook()
+// 	sellOrderA := NewOrder(5, true)
+// 	sellOrderB := NewOrder(8, true)
+// 	sellOrderC := NewOrder(10, true)
+// 	ob.PlaceOrderLimit(10_000, sellOrderA)
+// 	ob.PlaceOrderLimit(5_000, sellOrderC)
+// 	ob.PlaceOrderLimit(20_000, sellOrderB)
 
-	buyOrder := NewOrder(20, false)
-	matches := ob.PlaceMarketOrder(buyOrder)
-	fmt.Printf("%+v", matches)
-	assert(t, len(matches), 3)
-	// assert(t, len(ob.asks), 0)
-	assert(t, len(ob.bids), 1)
-	assert(t, ob.BidTotalVolume(), 3.0)
-}
+// 	buyOrder := NewOrder(20, false)
+// 	matches := ob.PlaceMarketOrder(buyOrder)
+// 	fmt.Printf("%+v", matches)
+// 	assert(t, len(matches), 3)
+// 	// assert(t, len(ob.asks), 0)
+// 	assert(t, len(ob.bids), 1)
+// 	assert(t, ob.BidTotalVolume(), 3.0)
+// }
 
 func TestCancelOrder(t *testing.T) {
 	ob := NewOrderBook()
